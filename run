@@ -1,0 +1,50 @@
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+import random
+import time
+
+# Define the search query and the website URL
+search_query = 'your query here'
+website_url = 'https://www.yourwebsite.com'
+
+# Create a new Chrome browser instance
+options = webdriver.ChromeOptions()
+options.add_argument('headless')
+driver = webdriver.Chrome(options=options)
+
+# Open the Google homepage
+driver.get('https://www.google.com')
+
+# Search for the query
+search_box = driver.find_element_by_name('q')
+search_box.send_keys(search_query)
+search_box.submit()
+
+# Wait for the search results to load
+results = WebDriverWait(driver, 10).until(
+    EC.presence_of_element_located((By.ID, 'search'))
+)
+
+# Click on search results until the website URL is found
+while True:
+    search_links = results.find_elements_by_tag_name('a')
+    for link in search_links:
+        href = link.get_attribute('href')
+        if website_url in href:
+            hover = ActionChains(driver).move_to_element(link)
+            hover.perform()
+            link.click()
+            driver.quit()
+            exit()
+    # If the website URL is not found, click on the next page link
+    next_link = driver.find_element_by_link_text('Next')
+    hover = ActionChains(driver).move_to_element(next_link)
+    hover.perform()
+    next_link.click()
+    # Wait for the next page to load
+    time.sleep(random.uniform(1.0, 3.0))
+    results = driver.find_element_by_id('search')
